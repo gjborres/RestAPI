@@ -3,6 +3,7 @@ package com.spring.spring_rest.service;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 import com.spring.spring_rest.dto.StudentDto;
@@ -39,8 +40,8 @@ public class StudentServiceImplement implements StudentService {
 	
 	@Override
 	public List<StudentDto> getAllStudents() {
-		List<Student> students = studentRepo.findAll();
-		
+		//I'm here:))
+		List<Student> students = studentRepo.findAll(Sort.by(Sort.Direction.ASC, "id"));		
 		return students.stream().map(
 				(student)-> StudentMapper.mapToStudentDto(student))
 				.collect(Collectors.toList());

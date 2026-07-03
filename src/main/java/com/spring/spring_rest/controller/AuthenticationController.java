@@ -1,7 +1,11 @@
 package com.spring.spring_rest.controller;
 
+import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
 
+import org.springframework.context.annotation.Bean;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -13,6 +17,9 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.cors.CorsConfiguration;
+import org.springframework.web.cors.CorsConfigurationSource;
+import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
 import com.spring.spring_rest.dto.AuthLoginDto;
 import com.spring.spring_rest.dto.AuthRoleRegisterDto;
@@ -23,6 +30,8 @@ import com.spring.spring_rest.repository.AuthRoleRepository;
 import com.spring.spring_rest.repository.AuthUserRepository;
 
 import jakarta.validation.Valid;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpSession;
 
 
 @RestController
@@ -125,8 +134,58 @@ public class AuthenticationController {
 				
 	}
 	
-	
+	@Bean
+	CorsConfigurationSource corsConfigurationSource() {
+		CorsConfiguration configuration = new CorsConfiguration();
+		
+		configuration.setAllowedOrigins(Arrays.asList("http://localhost:3000",
+														"http://127.0.0.1:3000"));
+		configuration.setAllowedMethods(Arrays.asList("GET", "POST",
+														"PUT","PATCH",
+														"DELETE", "OPTIONS"));
+		configuration.setAllowedHeaders(Arrays.asList("Authorization",
+														"Cache-Control",
+														"Content-Type"));
+		
+		configuration.setAllowCredentials(true);
+		
+		UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+		source.registerCorsConfiguration("/**", configuration);
+		return source;
 	}
+	
+	@PostMapping("/auth_login_session")
+	public ResponseEntity<?> loginWithSession(@RequestBody AuthLoginDto authLoginDto,
+												HttpServletRequest request) {
+		
+		Authentication authentication = authenticationManager.authenticate(
+				new UsernamePasswordAuthenticationToken(authLoginDto.getUsername(), 
+												authLoginDto.getPassword())
+				);
+		
+		SecurityContextHolder.getContext().setAuthentication(authentication);
+		HttpSession session = request.getSession(true);
+		session.setAttribute("SPRING_SECURITY_CONTEXT", SecurityContextHolder.getContext());
+		
+		Map<String, String> response = new HashMap<>();
+		response.put("message", "Authenticated successfully via session cookie.");
+		return ResponseEntity.ok(response);
+	}
+	
+	@PostMapping("/logout")
+	public ResponseEntity<String> logout(HttpServletRequest request) {
+		HttpSession session = request.getSession(false);
+		if (session != null) {
+			session.invalidate();
+		}
+		
+		SecurityContextHolder.clearContext();
+		return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+				.body("Logged out from session contatiner.");
+	}
+	
+	
+}
 
 
 
