@@ -22,6 +22,8 @@ import com.spring.spring_rest.entity.Auth_User;
 import com.spring.spring_rest.repository.AuthRoleRepository;
 import com.spring.spring_rest.repository.AuthUserRepository;
 
+import jakarta.validation.Valid;
+
 
 @RestController
 @RequestMapping("/api/auth")
@@ -109,7 +111,11 @@ public class AuthenticationController {
 	}
 	
 	@PostMapping("/auth_login")
-	public ResponseEntity<String> login(@RequestBody AuthLoginDto authLoginDto)  {
+	public ResponseEntity<String> login(@Valid @RequestBody AuthLoginDto authLoginDto)  {
+		
+		if (!authUserRepo.existsByUsername(authLoginDto.getUsername())) {
+			return new ResponseEntity<>("Invalid username or password", HttpStatus.BAD_REQUEST);
+		}
 		Authentication authenticate = authenticationManager.authenticate(
 				new UsernamePasswordAuthenticationToken(authLoginDto.getUsername(),
 						authLoginDto.getPassword()));
