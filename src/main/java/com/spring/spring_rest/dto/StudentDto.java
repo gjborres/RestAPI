@@ -1,6 +1,7 @@
 package com.spring.spring_rest.dto;
 
 import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 
 public class StudentDto {
@@ -13,6 +14,7 @@ public class StudentDto {
 	@Size(min=2, max=50, message="must be 2 to 50 characters.")
 	private String lastName;
 	
+	@NotBlank(message = "Email is required")
 	@Email(message="Email is required and should be valid")
 	private String email;
 	
